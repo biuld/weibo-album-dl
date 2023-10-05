@@ -73,7 +73,7 @@ private def getImageWall(
 
   val sid = body("data")("since_id") match
     case ujson.Str(value) => value
-    case _                => "0"
+    case _                => log.info(body("bottom_tips_text").str); "0"
 
   (sid, cnt)
 
