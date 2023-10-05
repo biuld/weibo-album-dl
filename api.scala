@@ -16,7 +16,6 @@ private val vistorUrl = "https://passport.weibo.com/visitor/visitor"
 private val genVistorUrl = "https://passport.weibo.com/visitor/genvisitor"
 // private val backend = Slf4jLoggingBackend(DefaultSyncBackend())
 private val backend = DefaultSyncBackend()
-private val log = LoggerFactory.getLogger("weibo-dl")
 
 private def genVistor: Option[Value] =
   val resp = quickRequest
@@ -42,7 +41,7 @@ private def getImageWall(
     uid: String,
     sinceId: String,
     cookies: Seq[(String, String)],
-    byteEater: (String, String, Array[Byte]) => Int = save
+    byteEater: (String, String, => Array[Byte]) => Int = save
 ): (String, Int) =
   val resp = quickRequest
     .get(
@@ -62,10 +61,10 @@ private def getImageWall(
 
       val video =
         if Try(pic("type").str).filter(t => t == "livephoto").isSuccess
-        then Some(save(uid, s"${pid}.mov", getRawBytes(pic("video").str)))
+        then Some(byteEater(uid, s"${pid}.mov", getRawBytes(pic("video").str)))
         else None
 
-      val photo = save(uid, s"${pid}.jpg", getImage(s"${pid}.jpg"))
+      val photo = byteEater(uid, s"${pid}.jpg", getImage(s"${pid}.jpg"))
 
       photo :: video.toList
     })

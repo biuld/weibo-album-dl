@@ -3,7 +3,7 @@ package util
 import scala.annotation.tailrec
 import org.slf4j.LoggerFactory
 
-private val log = LoggerFactory.getLogger("weibo-dl")
+val log = LoggerFactory.getLogger("weibo-dl")
 
 def save(uid: String, filename: String, data: => Array[Byte]): Int =
   val dir = os.pwd / "dl"
