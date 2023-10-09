@@ -10,6 +10,7 @@ import scala.collection.parallel.CollectionConverters.*
 import java.util.concurrent.TimeUnit
 import util.*
 import scala.util.Try
+import os.Path
 
 private val regx = raw"(?<=\()[\s\S]*(?=\))".r
 private val vistorUrl = "https://passport.weibo.com/visitor/visitor"
@@ -39,9 +40,10 @@ private def incarnate(t: String): Seq[(String, String)] =
 
 private def getImageWall(
     uid: String,
+    p: Path,
     sinceId: String,
     cookies: Seq[(String, String)],
-    byteEater: (String, String, => Array[Byte]) => Int = save
+    byteEater: (String, Path, String, => Array[Byte]) => Int = save
 ): (String, Int) =
   val resp = quickRequest
     .get(
@@ -61,10 +63,11 @@ private def getImageWall(
 
       val video =
         if Try(pic("type").str).filter(t => t == "livephoto").isSuccess
-        then Some(byteEater(uid, s"${pid}.mov", getRawBytes(pic("video").str)))
+        then
+          Some(byteEater(uid, p, s"${pid}.mov", getRawBytes(pic("video").str)))
         else None
 
-      val photo = byteEater(uid, s"${pid}.jpg", getImage(s"${pid}.jpg"))
+      val photo = byteEater(uid, p, s"${pid}.jpg", getImage(s"${pid}.jpg"))
 
       photo :: video.toList
     })
@@ -78,11 +81,12 @@ private def getImageWall(
 
 def getImageWall_(
     uid: String,
+    p: Path,
     sinceId: String,
     cookies: Seq[(String, String)]
 ): (String, Int) =
   val start = System.nanoTime()
-  val (nextId, cnt) = getImageWall(uid, sinceId, cookies)
+  val (nextId, cnt) = getImageWall(uid, p, sinceId, cookies)
   val end = System.nanoTime()
   log.info(
     s"finished batch $sinceId, $cnt files in ${TimeUnit.NANOSECONDS.toSeconds(end - start)} sec"
@@ -96,17 +100,18 @@ def sinaVistorSystem: Seq[(String, String)] =
 @tailrec
 def getAlbum(
     uid: String,
+    p: Path,
     sinceId: String = "0",
     cookies: Seq[(String, String)] = sinaVistorSystem,
     cnt: Int = 0
 ): Int =
-  retry(getImageWall_(uid, sinceId, cookies)) match
+  retry(getImageWall_(uid, p, sinceId, cookies)) match
     case None =>
       log.info(s"batch $sinceId failed after 3 retries")
       cnt
     case Some((nextId, c)) =>
       if nextId == "0" then c + cnt
-      else getAlbum(uid, nextId, cookies, c + cnt)
+      else getAlbum(uid, p, nextId, cookies, c + cnt)
 
 def getImage(filename: String): Array[Byte] = getRawBytes(
   s"https://wx2.sinaimg.cn/large/$filename"
