@@ -19,7 +19,8 @@ def run(p: String) =
     .filter(os.isDir(_))
     .foreach(path =>
       log.info(s"fetching ${path.baseName}")
-      getAlbum(path.baseName, dir)
+      val cnt = getAlbum(path.baseName, dir)
+      log.info(s"${path.baseName}: $cnt in total")
       Thread.sleep(60_000)
     )
   log.info("finished batch")

@@ -91,7 +91,6 @@ def getImageWall_(
   log.info(
     s"finished batch $sinceId, $cnt files in ${TimeUnit.NANOSECONDS.toSeconds(end - start)} sec"
   )
-  Thread.sleep(10_000)
   (nextId, cnt)
 
 def sinaVistorSystem: Seq[(String, String)] =
