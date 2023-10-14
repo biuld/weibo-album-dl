@@ -61,15 +61,15 @@ private def getImageWall(
 
       val pid = pic("pid").str
 
-      val video =
-        if Try(pic("type").str).filter(t => t == "livephoto").isSuccess
-        then
-          Some(byteEater(uid, p, s"${pid}.mov", getRawBytes(pic("video").str)))
-        else None
+      val video = for
+        ty <- Try(pic("type").str)
+        if ty == "livephoto"
+        url <- Try(pic("video").str)
+      yield byteEater(uid, p, s"${pid}.mov", getRawBytes(pic("video").str))
 
       val photo = byteEater(uid, p, s"${pid}.jpg", getImage(s"${pid}.jpg"))
 
-      photo :: video.toList
+      photo :: video.toOption.toList
     })
     .sum
 
