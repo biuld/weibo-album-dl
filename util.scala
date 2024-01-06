@@ -23,8 +23,6 @@ def save(
   if !os.exists(dest / filename) then
     os.write(dest / filename, data)
     log.info(s"${dest / filename} saved")
-  else log.info(s"${dest / filename} exists")
-
   return 1
 
 @tailrec

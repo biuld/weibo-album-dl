@@ -4,4 +4,5 @@
 .vscode
 dl
 out
+.idea
 .DS_Store
