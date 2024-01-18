@@ -11,12 +11,42 @@ import java.util.concurrent.TimeUnit
 import util.*
 import scala.util.Try
 import os.Path
+import java.{util => ju}
+import scala.util.Success
 
 private val regx = raw"(?<=\()[\s\S]*(?=\))".r
 private val vistorUrl = "https://passport.weibo.com/visitor/visitor"
 private val genVistorUrl = "https://passport.weibo.com/visitor/genvisitor"
 // private val backend = Slf4jLoggingBackend(DefaultSyncBackend())
 private val backend = DefaultSyncBackend()
+
+private def getEditHis(
+    uid: String,
+    p: Path,
+    mid: String,
+    cookies: Seq[(String, String)]
+): List[Int] =
+
+  val resp = quickRequest
+    .get(uri"https://weibo.com/ajax/statuses/editHistory?mid=$mid&page=1")
+    .cookies(cookies: _*)
+    .send(backend)
+
+  log.info(s"getting his for mid: $mid, status: ${resp.code}")
+
+  if !resp.is200 then return List.empty
+
+  val body = ujson.read(resp.body).obj
+
+  if body.contains("statuses") then
+    val statuses = body("statuses").arr.toList
+    for
+      s <- statuses
+      if s.obj.contains("pic_infos")
+      s1 <- s("pic_infos").obj.values
+      cnt <- download(uid, p, s1)
+    yield cnt
+  else List.empty
 
 private def genVistor: Option[Value] =
   val resp = quickRequest
@@ -38,12 +68,26 @@ private def incarnate(t: String): Seq[(String, String)] =
     .map { case Array(k, v) => (k, v) }
     .filter((k, _) => Seq("SUB", "SUBP").contains(k))
 
-private def getImageWall(
+def download(uid: String, p: Path, obj: Value) =
+  val pid =
+    try obj("pid").str
+    catch case e: ju.NoSuchElementException => obj("pic_id").str
+
+  val video = for
+    ty <- Try(obj("type").str)
+    if ty == "livephoto"
+    url <- Try(obj("video").str)
+  yield save(uid, p, s"${pid}.mov", getRawBytes(obj("video").str))
+
+  val photo = save(uid, p, s"${pid}.jpg", getImage(s"${pid}.jpg"))
+
+  photo :: video.toOption.toList
+
+def getImageWall(
     uid: String,
     p: Path,
     sinceId: String,
-    cookies: Seq[(String, String)],
-    byteEater: (String, Path, String, => Array[Byte]) => Int = save
+    cookies: Seq[(String, String)]
 ): (String, Int) =
   val resp = quickRequest
     .get(
@@ -58,18 +102,11 @@ private def getImageWall(
     .filter(_ != null)
     .par
     .flatMap(pic => {
+      val mid = pic("mid").str
+      // val his = getEditHis(uid, p, mid, cookies)
 
-      val pid = pic("pid").str
-
-      val video = for
-        ty <- Try(pic("type").str)
-        if ty == "livephoto"
-        url <- Try(pic("video").str)
-      yield byteEater(uid, p, s"${pid}.mov", getRawBytes(pic("video").str))
-
-      val photo = byteEater(uid, p, s"${pid}.jpg", getImage(s"${pid}.jpg"))
-
-      photo :: video.toOption.toList
+      // his ::: download(uid, p, pic)
+      download(uid, p, pic)
     })
     .sum
 
