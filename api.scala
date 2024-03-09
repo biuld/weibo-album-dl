@@ -29,7 +29,7 @@ private def getEditHis(
 
   val resp = quickRequest
     .get(uri"https://weibo.com/ajax/statuses/editHistory?mid=$mid&page=1")
-    .cookies(cookies: _*)
+    .cookies(cookies*)
     .send(backend)
 
   log.info(s"getting his for mid: $mid, status: ${resp.code}")
@@ -93,7 +93,7 @@ def getImageWall(
     .get(
       uri"https://weibo.com/ajax/profile/getImageWall?uid=$uid&sinceid=$sinceId"
     )
-    .cookies(cookies: _*)
+    .cookies(cookies*)
     .send(backend)
 
   val body = ujson.read(resp.body)
