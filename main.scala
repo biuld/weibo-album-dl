@@ -28,17 +28,20 @@ def run(p: String, since: String = "0") =
   log.info("finished term")
 
 @main
-def main(arg0: String, arg1: String, arg2: String) =
-  arg0 match
+def main(switch: String, dir: String, others: String*) =
+  switch match
     case "-w" =>
-      run(arg1, arg2)
+      others match
+        case _ if others.length == 0 => run(dir)
+        case _                       => run(dir, others(0))
     case "-s" =>
-      scheduler.scheduleAtFixedRate(() => run(arg1), 0, 1, TimeUnit.HOURS)
-    case "-u" => getAlbum(arg1, os.pwd / "dl")
+      scheduler.scheduleAtFixedRate(() => run(dir), 0, 1, TimeUnit.HOURS)
+    case "-u" => getAlbum(dir, os.pwd / "dl")
     case _ =>
       log.info(s"""
-      unsupported switch $arg0!
+      unsupported switch $switch!
       try these blow:
-        -w path periodically watch uid folders under `path`
+        -w path [sinceUid] to walk through ids inside path, and optionally skip ids which < sinceUid
+        -s path periodically watch uid folders under `path`
         -u uid download all images of uid
       """)
