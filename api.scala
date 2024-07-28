@@ -137,8 +137,8 @@ def sinaVistorSystem: Seq[(String, String)] =
 def getAlbum(
     uid: String,
     p: Path,
+    cookies: Seq[(String, String)],
     sinceId: String = "0",
-    cookies: Seq[(String, String)] = sinaVistorSystem,
     cnt: Int = 0
 ): Int =
   retry(getImageWall_(uid, p, sinceId, cookies)) match
@@ -147,7 +147,7 @@ def getAlbum(
       cnt
     case Some((nextId, c)) =>
       if nextId == "0" then c + cnt
-      else getAlbum(uid, p, nextId, cookies, c + cnt)
+      else getAlbum(uid, p, cookies, nextId, c + cnt)
 
 def getImage(filename: String): Array[Byte] = getRawBytes(
   s"https://wx2.sinaimg.cn/large/$filename"

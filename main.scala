@@ -15,13 +15,15 @@ def run(p: String, since: String = "0") =
       s"$p is empty, try to create an empty folder under $p, then name it after your uid. All the images will be downloaded into it!"
     )
 
+  val cookies = sinaVistorSystem  
+
   os.list(dir)
     .filter(os.isDir(_))
     .sortBy(_.baseName)
     .dropWhile(_.baseName < since)
     .foreach(path =>
       log.info(s"fetching ${path.baseName}")
-      val cnt = getAlbum(path.baseName, dir)
+      val cnt = getAlbum(path.baseName, dir, cookies)
       log.info(s"${path.baseName}: $cnt in total")
       Thread.sleep(60_000)
     )
@@ -36,7 +38,9 @@ def main(switch: String, dir: String, others: String*) =
         case _                       => run(dir, others(0))
     case "-s" =>
       scheduler.scheduleAtFixedRate(() => run(dir), 0, 1, TimeUnit.HOURS)
-    case "-u" => getAlbum(dir, os.pwd / "dl")
+    case "-u" => 
+      val cookies = sinaVistorSystem  
+      getAlbum(dir, os.pwd / "dl", cookies)
     case _ =>
       log.info(s"""
       unsupported switch $switch!
