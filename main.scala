@@ -1,9 +1,6 @@
-import os.Path
-import os.PathConvertible.StringConvertible
 import util.log
 import util.scheduler
 import weibo.api.getAlbum
-import weibo.api.getImageWall
 import weibo.api.sinaVisitorSystem
 
 import java.io.FileNotFoundException
@@ -31,21 +28,26 @@ def run(p: String) =
   log.info("finished term")
 
 @main
-def main(args: String*) =
+def main(args: String*): Unit =
   args match
     case "-w" :: dir :: _ => run(dir)
     case "-s" :: dir :: _ =>
-      scheduler.scheduleAtFixedRate(() => run(dir), 0, 1, TimeUnit.DAYS)
+      scheduler.scheduleWithFixedDelay(() => run(dir), 0, 1, TimeUnit.DAYS)
     case "-u" :: uid :: dir :: _ =>
       val p = util.path(dir)
       if !os.exists(p) then throw FileNotFoundException(s"$p does not exists")
       val cookies = sinaVisitorSystem
       getAlbum(uid, p, cookies)
     case _ =>
-      log.info(s"""
-      unsupported args ${args.mkString(" ")}!
-      try these blow:
-        -w `path` to walk through uids inside `path`
-        -s `path` to walk through uids inside `path` periodically (once a day)
-        -u `uid`  to download all images of `uid`
-      """)
+      val argsStr = System.getenv("WB_DL_ARGS")
+
+      if argsStr != null && argsStr.length() != 0 then
+        val args = argsStr.split(" ").toSeq
+        main(args*)
+      else log.info(s"""
+          unsupported args ${args.mkString(" ")}!
+          try these blow:
+            -w `path` to walk through uids inside `path`
+            -s `path` to walk through uids inside `path` periodically (once a day)
+            -u `uid`  to download all images of `uid`
+          """)
