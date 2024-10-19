@@ -48,7 +48,7 @@ private def getEditHis(
     yield cnt
   else List.empty
 
-private def genVistor: Option[Value] =
+private def genVisitor: Option[Value] =
   val resp = quickRequest
     .post(uri"$genVistorUrl")
     .body(("cb", "gen_callback"))
@@ -130,8 +130,8 @@ def getImageWall_(
   )
   (nextId, cnt)
 
-def sinaVistorSystem: Seq[(String, String)] =
-  genVistor.toSeq.map(_("data")("tid").str).flatMap(incarnate(_))
+def sinaVisitorSystem: Seq[(String, String)] =
+  genVisitor.toSeq.map(_("data")("tid").str).flatMap(incarnate(_))
 
 @tailrec
 def getAlbum(

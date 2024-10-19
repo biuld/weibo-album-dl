@@ -3,7 +3,7 @@ import util.log
 import util.scheduler
 import java.util.concurrent.TimeUnit
 import weibo.api.getImageWall
-import weibo.api.sinaVistorSystem
+import weibo.api.sinaVisitorSystem
 import java.io.FileNotFoundException
 import os.Path
 
@@ -15,7 +15,7 @@ def run(p: String, since: String = "0") =
       s"$p is empty, try to create an empty folder under $p, then name it after your uid. All the images will be downloaded into it!"
     )
 
-  val cookies = sinaVistorSystem  
+  val cookies = sinaVisitorSystem  
 
   os.list(dir)
     .filter(os.isDir(_))
@@ -39,7 +39,7 @@ def main(switch: String, dir: String, others: String*) =
     case "-s" =>
       scheduler.scheduleAtFixedRate(() => run(dir), 0, 1, TimeUnit.HOURS)
     case "-u" => 
-      val cookies = sinaVistorSystem  
+      val cookies = sinaVisitorSystem  
       getAlbum(dir, os.pwd / "dl", cookies)
     case _ =>
       log.info(s"""
