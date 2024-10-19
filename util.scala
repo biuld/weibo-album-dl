@@ -1,9 +1,12 @@
 package util
 
-import scala.annotation.tailrec
 import org.slf4j.LoggerFactory
-import java.util.concurrent.ScheduledThreadPoolExecutor
 import os.Path
+import os.PathConvertible
+
+import java.nio.file.Paths
+import java.util.concurrent.ScheduledThreadPoolExecutor
+import scala.annotation.tailrec
 
 val log = LoggerFactory.getLogger("weibo-dl")
 
@@ -36,3 +39,11 @@ def retry[T](f: => T, times: Int = 0): Option[T] =
       Thread.sleep(times * 5_000)
       return retry(f, times + 1)
   t
+
+
+def path(t: String): Path = 
+  val p = Paths.get(t)
+  if p.isAbsolute() then
+    os.Path(p)
+  else
+    os.Path(p.toAbsolutePath())
