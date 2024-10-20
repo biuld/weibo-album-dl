@@ -1,0 +1,16 @@
+[Container]
+ContainerName=weibo-album-dl
+Environment="WB_DL_ARGS=-s /dl"
+Image=weibo-album-dl:latest
+Volume=/mnt/sda1/code/dl:/dl
+WorkingDir=/app
+
+[Service]
+Restart=always
+
+[Unit]
+Description=weibo-album-dl
+After=network.target
+
+[Install]
+WantedBy=multi-user.target

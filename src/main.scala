@@ -27,27 +27,34 @@ def run(p: String) =
     )
   log.info("finished term")
 
+def logHelp(args: Seq[String]) = log.info(s"""
+  unsupported args: ${args.mkString(" ")}!
+  try these blow:
+    -w `path` to walk through uids inside `path`
+    -s `path` to walk through uids inside `path` periodically (once a day)
+    -u `uid`  to download all images of `uid`
+  """)
+
 @main
 def main(args: String*): Unit =
   args match
-    case "-w" :: dir :: _ => run(dir)
-    case "-s" :: dir :: _ =>
+    case _ if args.size == 0 =>
+      val argsStr = System.getenv("WB_DL_ARGS")
+      argsStr match
+        case _ if argsStr != null && argsStr.length() != 0 =>
+          val argsFromEnv = argsStr.split(" ")
+          wrappedMain(argsFromEnv*)
+        case _ => logHelp(Seq("empty char"))
+    case _ => wrappedMain(args*)
+
+def wrappedMain(args: String*): Unit =
+  args match
+    case Seq("-w", dir) => run(dir)
+    case Seq("-s", dir) =>
       scheduler.scheduleWithFixedDelay(() => run(dir), 0, 1, TimeUnit.DAYS)
-    case "-u" :: uid :: dir :: _ =>
+    case Seq("-u", uid, dir) =>
       val p = util.path(dir)
       if !os.exists(p) then throw FileNotFoundException(s"$p does not exists")
       val cookies = sinaVisitorSystem
       getAlbum(uid, p, cookies)
-    case _ =>
-      val argsStr = System.getenv("WB_DL_ARGS")
-
-      if argsStr != null && argsStr.length() != 0 then
-        val args = argsStr.split(" ").toSeq
-        main(args*)
-      else log.info(s"""
-          unsupported args ${args.mkString(" ")}!
-          try these blow:
-            -w `path` to walk through uids inside `path`
-            -s `path` to walk through uids inside `path` periodically (once a day)
-            -u `uid`  to download all images of `uid`
-          """)
+    case _ => logHelp(args)

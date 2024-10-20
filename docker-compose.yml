@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  weibo-album-dl:
+    image: weibo-album-dl:latest
+    container_name: weibo-album-dl
+    restart: unless-stopped
+    volumes:
+      - ./dl:/dl  # 可选：挂载本地目录到容器中
+    environment:
+      WB_DL_ARGS: "-s /dl"
