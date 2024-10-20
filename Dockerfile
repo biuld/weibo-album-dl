@@ -31,7 +31,7 @@ WORKDIR /app
 COPY src .
 
 # 使用 scala-cli 构建项目，生成 JAR 文件
-RUN scala-cli package --power . -o weibo-album-dl.jar.jar --assembly --preamble=false --jvm 21
+RUN scala-cli package --power . -o weibo-album-dl.jar --assembly --preamble=false --jvm 21
 
 # 第二阶段：运行阶段
 FROM openjdk:21
@@ -40,7 +40,7 @@ FROM openjdk:21
 WORKDIR /app
 
 # 从构建阶段复制生成的 JAR 文件
-COPY --from=builder /app/weibo-album-dl.jar.jar /app/weibo-album-dl.jar.jar
+COPY --from=builder /app/weibo-album-dl.jar /app/weibo-album-dl.jar
 
 # 设置容器启动命令，使用 OpenJDK 21 运行 JAR 文件
-CMD ["java", "-jar", "/app/weibo-album-dl.jar.jar"]
+CMD ["java", "-jar", "/app/weibo-album-dl.jar"]
