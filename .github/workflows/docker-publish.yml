@@ -47,6 +47,8 @@ jobs:
             type=ref,event=branch
             type=sha
             type=ref,event=tag
+          flavor: |  # 添加 flavor 以支持更灵活的标签生成
+            latest=true
 
       # 构建并推送多架构 Docker 镜像
       - name: Build and push Docker image
@@ -58,8 +60,8 @@ jobs:
           platforms: linux/amd64,linux/arm64
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=${{ github.repository }}  # 添加 scope 以优化缓存共享
+          cache-to: type=gha,mode=max,scope=${{ github.repository }}
 
       # 使用 cosign 签名发布的 Docker 镜像
       - name: Sign the published Docker image
@@ -68,9 +70,10 @@ jobs:
           DIGEST: ${{ steps.build-and-push.outputs.digest }}
           TAGS: ${{ steps.meta.outputs.tags }}
         run: |
+          set -e  # 确保脚本在出错时立即退出
           images=""
           for tag in $(echo $TAGS | tr ',' ' '); do
             images+="$tag@$DIGEST "
           done
           echo "Signing images: ${images}"  # 添加调试输出
-          cosign sign --yes ${images}
+          cosign sign --yes ${images} || { echo "Cosign signing failed"; exit 1; }  # 添加错误处理
