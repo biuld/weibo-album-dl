@@ -32,7 +32,7 @@ def logHelp(args: Seq[String]) = log.info(s"""
   try these blow:
     -w `path` to walk through uids inside `path`
     -s `path` to walk through uids inside `path` periodically (once a day)
-    -u `uid`  to download all images of `uid`
+    -u `uid` `path` to download all images of `uid` into `path`
   """)
 
 @main

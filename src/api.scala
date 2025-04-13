@@ -69,19 +69,17 @@ private def incarnate(t: String): Seq[(String, String)] =
     .filter((k, _) => Seq("SUB", "SUBP").contains(k))
 
 def download(uid: String, p: Path, obj: Value) =
-  val pid =
-    try obj("pid").str
-    catch case e: ju.NoSuchElementException => obj("pic_id").str
+  var cnt = for
+    pid <- Try(obj("pid").str).orElse(Try(obj("pic_id").str))
+    photoCnt = save(uid, p, s"${pid}.jpg", getImage(s"${pid}.jpg"))
+    videoCnt = for
+      ty <- Try(obj("type").str)
+      if ty == "livephoto"
+      url <- Try(obj("video").str)
+    yield save(uid, p, s"${pid}.mov", getRawBytes(obj("video").str))
+  yield photoCnt :: videoCnt.toOption.toList
 
-  val video = for
-    ty <- Try(obj("type").str)
-    if ty == "livephoto"
-    url <- Try(obj("video").str)
-  yield save(uid, p, s"${pid}.mov", getRawBytes(obj("video").str))
-
-  val photo = save(uid, p, s"${pid}.jpg", getImage(s"${pid}.jpg"))
-
-  photo :: video.toOption.toList
+  cnt.getOrElse(Nil)
 
 def getImageWall(
     uid: String,
