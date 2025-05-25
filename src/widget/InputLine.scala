@@ -10,7 +10,8 @@ object InputLine {
       cursorPos: Int = 0,
       prompt: String,
       history: List[String] = List.empty,
-      historyIndex: Int = -1  // -1 means current input, 0 means most recent history
+      historyIndex: Int = -1,  // -1 means current input, 0 means most recent history
+      shouldExit: Boolean = false  // New field to track exit request
   )
 
   // Key handlers
@@ -86,7 +87,11 @@ object InputLine {
           Terminal.write(s"\u001b[${state.buffer.length - state.cursorPos}D") // Move cursor back
           Terminal.flush()
           state
-          
+
+        case KeyCode.Character('d') => // Ctrl+D: Exit if buffer is empty
+          if state.buffer.isEmpty then {
+            state.copy(shouldExit = true)
+          } else state
         case _ => state
       }
     }
@@ -140,45 +145,47 @@ object InputLine {
 
   def readLine(prompt: String, history: List[String]): Program[Option[String]] = {
     def loop(state: State): Program[Option[String]] = {
-      Terminal.readKey() match {
-        case Key.enter =>
-          Terminal.write("\n")
-          Terminal.flush()
-          Some(state.buffer)
+      if state.shouldExit then None
+      else
+        Terminal.readKey() match {
+          case Key.enter =>
+            Terminal.write("\n")
+            Terminal.flush()
+            Some(state.buffer)
 
-        case key: Key if key.modifiers == KeyModifier.Control =>
-          val newState = key.code match {
-            case KeyCode.Character(_) => KeyHandlers.handleCtrlKey(state, key)
-            case _ => KeyHandlers.handleSpecialKey(state, key)
-          }
-          loop(newState)
+          case key: Key if key.modifiers == KeyModifier.Control =>
+            val newState = key.code match {
+              case KeyCode.Character(_) => KeyHandlers.handleCtrlKey(state, key)
+              case _ => KeyHandlers.handleSpecialKey(state, key)
+            }
+            loop(newState)
 
-        case key: Key
-            if key.code == KeyCode.Left || key.code == KeyCode.Right ||
-               key.code == KeyCode.Up || key.code == KeyCode.Down =>
-          val newState = KeyHandlers.handleArrowKey(state, key)
-          loop(newState)
+          case key: Key
+              if key.code == KeyCode.Left || key.code == KeyCode.Right ||
+                 key.code == KeyCode.Up || key.code == KeyCode.Down =>
+            val newState = KeyHandlers.handleArrowKey(state, key)
+            loop(newState)
 
-        case Key(KeyModifier.None, KeyCode.Character(c)) =>
-          val newBuffer = state.buffer.substring(0, state.cursorPos) + c +
-            state.buffer.substring(state.cursorPos)
-          // Only write the new character and move cursor
-          Terminal.write(c.toString)
-          Terminal.flush()
-          loop(
-            state.copy(
-              buffer = newBuffer,
-              cursorPos = state.cursorPos + 1,
-              historyIndex = -1  // Reset history index when typing
+          case Key(KeyModifier.None, KeyCode.Character(c)) =>
+            val newBuffer = state.buffer.substring(0, state.cursorPos) + c +
+              state.buffer.substring(state.cursorPos)
+            // Only write the new character and move cursor
+            Terminal.write(c.toString)
+            Terminal.flush()
+            loop(
+              state.copy(
+                buffer = newBuffer,
+                cursorPos = state.cursorPos + 1,
+                historyIndex = -1  // Reset history index when typing
+              )
             )
-          )
 
-        case key: Key if key.code == KeyCode.Backspace || key.code == KeyCode.Delete =>
-          val newState = KeyHandlers.handleSpecialKey(state, Key.backspace)
-          loop(newState.copy(historyIndex = -1))  // Reset history index when deleting
+          case key: Key if key.code == KeyCode.Backspace || key.code == KeyCode.Delete =>
+            val newState = KeyHandlers.handleSpecialKey(state, Key.backspace)
+            loop(newState.copy(historyIndex = -1))  // Reset history index when deleting
 
-        case _ => loop(state)
-      }
+          case _ => loop(state)
+        }
     }
 
     Terminal.raw {      

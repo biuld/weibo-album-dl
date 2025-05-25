@@ -8,7 +8,7 @@ import java.nio.file.Paths
 import java.util.concurrent.ScheduledThreadPoolExecutor
 import scala.annotation.tailrec
 
-val log = LoggerFactory.getLogger("weibo-dl")
+val log = LoggerFactory.getLogger("weibo-albun-dl")
 
 val scheduler = ScheduledThreadPoolExecutor(1)
 
