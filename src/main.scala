@@ -2,6 +2,7 @@ import util.log
 import util.scheduler
 import weibo.api.getAlbum
 import weibo.api.sinaVisitorSystem
+import Repl.run as runRepl
 
 import java.io.FileNotFoundException
 import java.util.concurrent.TimeUnit
@@ -33,6 +34,7 @@ def logHelp(args: Seq[String]) = log.info(s"""
     -w `path` to walk through uids inside `path`
     -s `path` to walk through uids inside `path` periodically (once a day)
     -u `uid` `path` to download all images of `uid` into `path`
+    -r         to start interactive REPL mode
   """)
 
 @main
@@ -57,4 +59,5 @@ def wrappedMain(args: String*): Unit =
       if !os.exists(p) then throw FileNotFoundException(s"$p does not exists")
       val cookies = sinaVisitorSystem
       getAlbum(uid, p, cookies)
+    case Seq("-r") => runRepl()
     case _ => logHelp(args)

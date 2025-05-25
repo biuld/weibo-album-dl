@@ -76,7 +76,7 @@ def download(uid: String, p: Path, obj: Value) =
       ty <- Try(obj("type").str)
       if ty == "livephoto"
       url <- Try(obj("video").str)
-    yield save(uid, p, s"${pid}.mov", getRawBytes(obj("video").str))
+    yield save(uid, p, s"${pid}.mov", getRawBytes(url))
   yield photoCnt :: videoCnt.toOption.toList
 
   cnt.getOrElse(Nil)
@@ -129,7 +129,7 @@ def getImageWall_(
   (nextId, cnt)
 
 def sinaVisitorSystem: Seq[(String, String)] =
-  genVisitor.toSeq.map(_("data")("tid").str).flatMap(incarnate(_))
+  genVisitor.toSeq.map(_("data")("tid").str).flatMap(incarnate)
 
 @tailrec
 def getAlbum(
