@@ -27,8 +27,9 @@ RUN cs install scala-cli
 # 设置工作目录
 WORKDIR /app
 
-# 复制项目到工作目录中
-COPY src .
+# 复制项目文件到工作目录中
+COPY src src/
+COPY .scalafmt.conf ./
 
 # 使用 scala-cli 构建项目，生成 JAR 文件
 RUN scala-cli package --power . -o weibo-album-dl.jar --assembly --preamble=false --jvm 21
@@ -38,6 +39,9 @@ FROM openjdk:21
 
 # 设置工作目录
 WORKDIR /app
+
+# 创建日志目录
+RUN mkdir -p /app/logs
 
 # 从构建阶段复制生成的 JAR 文件
 COPY --from=builder /app/weibo-album-dl.jar /app/weibo-album-dl.jar

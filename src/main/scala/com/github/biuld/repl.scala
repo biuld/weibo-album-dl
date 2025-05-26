@@ -1,12 +1,14 @@
+package com.github.biuld.repl
+
 import terminus.*
 import terminus.effect.{Reader, Writer, Color}
 import scala.util.{Try, Success, Failure}
-import util.log
-import util.scheduler
-import api.weibo.Weibo
+import com.github.biuld.util.log
+import com.github.biuld.util.scheduler
+import com.github.biuld.api.weibo.Weibo
 import java.io.FileNotFoundException
 import java.util.concurrent.TimeUnit
-import widget.InputLine
+import com.github.biuld.widget.Input
 
 object Repl {
   // Command ADT
@@ -68,7 +70,7 @@ object Repl {
         Terminal.flush()
       }
       try
-        Weibo.walkDirectory(util.path(dir))
+        Weibo.walkDirectory(com.github.biuld.util.path(dir))
         Terminal.write("Finished walking through directory\n")
         Terminal.flush()
       catch
@@ -87,7 +89,7 @@ object Repl {
         Terminal.flush()
       }
       try
-        val cnt = Weibo.downloadForUid(uid, util.path(dir))
+        val cnt = Weibo.downloadForUid(uid, com.github.biuld.util.path(dir))
         Terminal.write(s"Downloaded $cnt images\n")
         Terminal.flush()
       catch
@@ -122,7 +124,7 @@ object Repl {
 
       // Main REPL loop
       def loop(): Program[Unit] = {
-        InputLine.readLine("weibo-album-dl> ", history) match
+        Input.readLine("weibo-album-dl> ", history) match
           case Some(input) =>
             // Add non-empty commands to history
             if !input.trim.isEmpty then history = input :: history

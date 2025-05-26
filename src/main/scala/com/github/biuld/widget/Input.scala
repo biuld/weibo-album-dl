@@ -1,9 +1,9 @@
-package widget
+package com.github.biuld.widget
 
 import terminus.*
 import terminus.effect.{Reader, Writer, Color}
 
-object InputLine {
+object Input {
   // State to track cursor position and input buffer
   case class State(
       buffer: String = "",

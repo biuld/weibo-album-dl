@@ -6,6 +6,7 @@ services:
     container_name: weibo-album-dl
     restart: unless-stopped
     volumes:
-      - ./dl:/dl  # 可选：挂载本地目录到容器中
+      - ./dl:/dl  # 下载目录
+      - ./logs:/app/logs  # 日志目录
     environment:
       WB_DL_ARGS: "-s /dl"

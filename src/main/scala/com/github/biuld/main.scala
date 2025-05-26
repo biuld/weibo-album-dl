@@ -1,13 +1,16 @@
-import util.log
-import util.scheduler
-import api.weibo.Weibo
-import Repl.run as runRepl
+package com.github.biuld.main
+
+import com.github.biuld.util.log
+import com.github.biuld.util.scheduler
+import com.github.biuld.api.weibo.Weibo
+import com.github.biuld.repl.Repl.run as runRepl
 
 import java.io.FileNotFoundException
 import java.util.concurrent.TimeUnit
+import com.github.biuld.util.path
 
 def run(p: String) =
-  val dir = util.path(p)
+  val dir = path(p)
   Weibo.walkDirectory(dir)
 
 def logHelp(args: Seq[String]) = log.info(s"""
@@ -34,7 +37,7 @@ def main(args: String*): Unit =
 def wrappedMain(args: String*): Unit =
   args match
     case Seq("-w", dir) => run(dir)
-    case Seq("-s", dir) => Weibo.scheduleWalkDirectory(util.path(dir))
-    case Seq("-u", uid, dir) => Weibo.downloadForUid(uid, util.path(dir))
+    case Seq("-s", dir) => Weibo.scheduleWalkDirectory(path(dir))
+    case Seq("-u", uid, dir) => Weibo.downloadForUid(uid, path(dir))
     case Seq("-r") => runRepl()
     case _ => logHelp(args)

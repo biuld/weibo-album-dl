@@ -1,4 +1,4 @@
-package util
+package com.github.biuld.util
 
 import org.slf4j.LoggerFactory
 import os.Path
@@ -8,7 +8,7 @@ import java.nio.file.Paths
 import java.util.concurrent.ScheduledThreadPoolExecutor
 import scala.annotation.tailrec
 
-val log = LoggerFactory.getLogger("weibo-albun-dl")
+val log = LoggerFactory.getLogger("weibo-album-dl")
 
 val scheduler = ScheduledThreadPoolExecutor(1)
 

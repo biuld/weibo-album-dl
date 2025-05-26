@@ -1,4 +1,4 @@
-package api.weibo
+package com.github.biuld.api.weibo
 
 import sttp.client4.quick.*
 import ujson.Value
@@ -8,7 +8,7 @@ import sttp.client4.logging.slf4j.Slf4jLoggingBackend
 import org.slf4j.LoggerFactory
 import scala.collection.parallel.CollectionConverters.*
 import java.util.concurrent.TimeUnit
-import util.*
+import com.github.biuld.util.{log, save, retry, path, scheduler}
 import scala.util.Try
 import os.Path
 import java.{util => ju}
@@ -190,7 +190,7 @@ object Weibo {
 
   def scheduleWalkDirectory(dir: Path): Unit = {
     if !os.exists(dir) then throw FileNotFoundException(s"$dir does not exist")
-    scheduler.scheduleWithFixedDelay(() => 
+    com.github.biuld.util.scheduler.scheduleWithFixedDelay(() => 
       try
         val cookies = sinaVisitorSystem
         os.list(dir)
